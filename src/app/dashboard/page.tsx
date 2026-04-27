@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { AlertTriangle, ArrowDownRight, ArrowUpRight, Landmark, ListChecks, WalletCards } from "lucide-react";
+import { AlertTriangle, ArrowDownRight, ArrowUpRight, Landmark, ListChecks, ReceiptText, SlidersHorizontal, WalletCards } from "lucide-react";
 import { PlaidConnectButton } from "@/components/plaid-connect-button";
 import { BudgetSettingsForm } from "@/components/budget-settings-form";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -42,7 +42,7 @@ export default async function DashboardPage() {
   }));
   const summary = summarizeTransactions(mapped);
   const currentMonth = new Date().toISOString().slice(0, 7);
-  const currentWeek = Object.keys(summary.byWeek).sort().at(-1) ?? "";
+  const currentWeek = Object.keys(summary.byWeek).sort().at(-1) ?? "No synced week";
   const monthlyBudget = Number(settings?.monthly_budget ?? 3200);
   const weeklyBudget = Number(settings?.weekly_budget ?? 800);
   const monthlySpend = summary.byMonth[currentMonth]?.spend ?? 0;
@@ -63,12 +63,27 @@ export default async function DashboardPage() {
   const monthRatio = monthlyBudget === 0 ? 0 : monthlySpend / monthlyBudget;
   const weekRatio = weeklyBudget === 0 ? 0 : weeklySpend / weeklyBudget;
   const progressTone = health.status === "monthly-overrun" ? "red" : health.status === "weekly-overrun" ? "amber" : "green";
+  const monthLabel = new Date(`${currentMonth}-01T00:00:00`).toLocaleDateString("en-US", { month: "long", year: "numeric" });
+
+  const metrics = [
+    { label: "Monthly spend", value: currency.format(monthlySpend), detail: `${percent.format(monthRatio)} of ${currency.format(monthlyBudget)}`, icon: ArrowUpRight },
+    { label: "Weekly spend", value: currency.format(weeklySpend), detail: `${percent.format(weekRatio)} of ${currency.format(weeklyBudget)}`, icon: AlertTriangle },
+    { label: "Cash left", value: currency.format(health.monthlyRemaining), detail: `${tone.label.toLowerCase()} for ${monthLabel}`, icon: ArrowDownRight },
+    { label: "Connected APIs", value: String(connectedCount), detail: connectedCount ? "sync source active" : "connect provider next", icon: Landmark },
+  ];
 
   return (
     <main className="min-h-[100dvh] bg-[#f7f5ee] text-slate-950 dark:bg-[#080b0a] dark:text-white">
       <header className="sticky top-0 z-20 border-b border-slate-200/80 bg-[#f7f5ee]/90 backdrop-blur dark:border-white/10 dark:bg-[#080b0a]/90">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4 sm:px-8">
-          <Link href="/" className="text-lg font-black tracking-tight text-slate-950 dark:text-white">Clearcoin</Link>
+          <div className="flex items-center gap-5">
+            <Link href="/" className="text-lg font-black tracking-tight text-slate-950 dark:text-white">Clearcoin</Link>
+            <nav className="hidden items-center gap-1 text-sm font-medium text-slate-500 dark:text-slate-400 md:flex" aria-label="Dashboard sections">
+              <a className="rounded-full bg-slate-950 px-3 py-1.5 text-white dark:bg-white dark:text-slate-950" href="#overview">Overview</a>
+              <a className="rounded-full px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-white/10" href="#transactions">Transactions</a>
+              <a className="rounded-full px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-white/10" href="#settings">Settings</a>
+            </nav>
+          </div>
           <div className="flex items-center gap-3">
             <ThemeToggle />
             <span className={`hidden rounded-full border px-3 py-1 text-xs font-bold sm:inline-flex ${tone.badge}`}>{tone.label}</span>
@@ -76,65 +91,106 @@ export default async function DashboardPage() {
         </div>
       </header>
 
-      <section className="mx-auto max-w-7xl px-5 py-8 sm:px-8 lg:py-10">
-        <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-stretch">
-          <section className={`rounded-[2rem] border p-6 shadow-sm ${tone.surface}`}>
-            <p className="text-xs font-bold uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">Financial visibility</p>
-            <div className="mt-5 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-              <div>
-                <h1 className="max-w-3xl text-5xl font-black leading-[0.9] tracking-tight sm:text-7xl">Know where the money is going.</h1>
-                <p className="mt-5 max-w-2xl text-base leading-7 text-slate-700 dark:text-slate-300">Connected accounts feed the budget. Clearcoin turns weekly burn, monthly drift, and category pressure into a readable control panel.</p>
-              </div>
-              <div className="rounded-3xl border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-slate-950/40">
-                <p className={`text-sm font-bold ${tone.accent}`}>{tone.label}</p>
-                <p className="number-font mt-2 text-4xl font-black tracking-tight">{currency.format(health.monthlyRemaining)}</p>
-                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">left in monthly plan</p>
-              </div>
+      <section id="overview" className="mx-auto max-w-7xl px-5 py-6 sm:px-8">
+        <div className="flex flex-col gap-4 border-b border-slate-200 pb-5 dark:border-white/10 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">{monthLabel} · {currentWeek}</p>
+            <h1 className="mt-2 text-4xl font-black leading-none tracking-tight sm:text-5xl">Overview</h1>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">Budget, card spend, account sync, and category pressure in one view.</p>
+          </div>
+          <div className="grid gap-2 text-sm sm:grid-cols-3 lg:min-w-[520px]">
+            <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 dark:border-white/10 dark:bg-white/[0.04]">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Monthly budget</p>
+              <p className="number-font mt-1 font-semibold">{currency.format(monthlyBudget)}</p>
             </div>
-          </section>
-
-          <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
-            <div className="flex items-center gap-3">
-              <div className="rounded-full bg-[#9fe870] p-2 text-[#163300]"><ListChecks aria-hidden="true" className="h-5 w-5" /></div>
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">Next actions</p>
-                <h2 className="text-xl font-semibold tracking-tight">What to watch now</h2>
-              </div>
+            <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 dark:border-white/10 dark:bg-white/[0.04]">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Weekly budget</p>
+              <p className="number-font mt-1 font-semibold">{currency.format(weeklyBudget)}</p>
             </div>
-            <div className="mt-5 space-y-3">
-              {insights.map((insight) => (
-                <p key={insight} className="rounded-2xl bg-slate-50 p-4 text-sm leading-6 text-slate-700 dark:bg-white/[0.04] dark:text-slate-300">{insight}</p>
-              ))}
+            <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 dark:border-white/10 dark:bg-white/[0.04]">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Transactions</p>
+              <p className="number-font mt-1 font-semibold">{mapped.length}</p>
             </div>
-          </section>
+          </div>
         </div>
 
-        <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {[
-            { label: "Monthly spend", value: currency.format(monthlySpend), detail: `${percent.format(monthRatio)} of ${currency.format(monthlyBudget)}`, icon: ArrowUpRight },
-            { label: "Weekly spend", value: currency.format(weeklySpend), detail: `${percent.format(weekRatio)} of ${currency.format(weeklyBudget)}`, icon: AlertTriangle },
-            { label: "Savings target", value: currency.format(health.savingsPotential), detail: "salary + income - planned budget", icon: ArrowDownRight },
-            { label: "Connected APIs", value: String(connectedCount), detail: connectedCount ? "sync source active" : "connect provider next", icon: Landmark },
-          ].map((metric) => (
-            <section key={metric.label} className="rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+        <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {metrics.map((metric) => (
+            <section key={metric.label} className="rounded-[1.5rem] border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
               <div className="flex items-center justify-between gap-3">
-                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{metric.label}</p>
-                <metric.icon aria-hidden="true" className="h-5 w-5 text-slate-400" />
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">{metric.label}</p>
+                <metric.icon aria-hidden="true" className="h-4 w-4 text-slate-400" />
               </div>
               <p className="number-font mt-3 text-3xl font-black tracking-tight">{metric.value}</p>
-              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{metric.detail}</p>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{metric.detail}</p>
             </section>
           ))}
         </div>
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-[0.82fr_1.18fr]">
-          <div className="space-y-6">
-            <section className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+        <div className="mt-5 grid gap-5 xl:grid-cols-[1.25fr_0.75fr]">
+          <section id="transactions" className="rounded-[1.75rem] border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+            <div className="flex flex-col gap-3 border-b border-slate-100 p-5 dark:border-white/10 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <ReceiptText aria-hidden="true" className="h-5 w-5 text-slate-500 dark:text-slate-400" />
+                  <h2 className="text-xl font-semibold tracking-tight">Recent transactions</h2>
+                </div>
+                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">Newest synced spend and income rows.</p>
+              </div>
+              <span className="w-fit rounded-full border border-slate-200 px-3 py-1 text-xs font-bold text-slate-600 dark:border-white/10 dark:text-slate-300">{mapped.length} synced</span>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[640px] text-left text-sm">
+                <thead className="border-b border-slate-100 text-xs uppercase tracking-[0.18em] text-slate-500 dark:border-white/10 dark:text-slate-400">
+                  <tr>
+                    <th className="px-5 py-3 font-bold">Merchant</th>
+                    <th className="px-5 py-3 font-bold">Category</th>
+                    <th className="px-5 py-3 font-bold">Date</th>
+                    <th className="px-5 py-3 text-right font-bold">Amount</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-white/10">
+                  {mapped.slice(0, 8).map((transaction) => (
+                    <tr key={transaction.id}>
+                      <td className="px-5 py-4 font-semibold text-slate-950 dark:text-white">{transaction.merchantName}</td>
+                      <td className="px-5 py-4 text-slate-600 dark:text-slate-300">{transaction.category}</td>
+                      <td className="px-5 py-4 text-slate-500 dark:text-slate-400">{transaction.date}</td>
+                      <td className={`number-font px-5 py-4 text-right font-semibold ${transaction.amount < 0 ? "text-emerald-700 dark:text-emerald-300" : "text-slate-950 dark:text-white"}`}>{currency.format(Math.abs(transaction.amount))}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {mapped.length === 0 ? (
+                <div className="px-5 py-12 text-center">
+                  <p className="font-semibold text-slate-950 dark:text-white">No synced transactions yet.</p>
+                  <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-600 dark:text-slate-300">Add Plaid credentials, connect Chase or card accounts, then sync transactions into this table.</p>
+                </div>
+              ) : null}
+            </div>
+          </section>
+
+          <aside className="space-y-5">
+            <section className="rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+              <div className="flex items-center gap-3">
+                <div className="rounded-full bg-[#9fe870] p-2 text-[#163300]"><ListChecks aria-hidden="true" className="h-5 w-5" /></div>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Next actions</p>
+                  <h2 className="text-lg font-semibold tracking-tight">Open items</h2>
+                </div>
+              </div>
+              <div className="mt-4 space-y-2">
+                {insights.map((insight) => (
+                  <p key={insight} className="rounded-2xl bg-slate-50 p-3 text-sm leading-6 text-slate-700 dark:bg-white/[0.04] dark:text-slate-300">{insight}</p>
+                ))}
+              </div>
+            </section>
+
+            <section className="rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
               <div className="flex items-center gap-3">
                 <div className="rounded-full bg-slate-100 p-2 text-slate-700 dark:bg-white/10 dark:text-slate-200"><WalletCards aria-hidden="true" className="h-5 w-5" /></div>
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">Budget burn</p>
-                  <h2 className="text-xl font-semibold tracking-tight">Actual vs planned</h2>
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Budget burn</p>
+                  <h2 className="text-lg font-semibold tracking-tight">Actual vs planned</h2>
                 </div>
               </div>
               <div className="mt-5 space-y-5">
@@ -148,59 +204,50 @@ export default async function DashboardPage() {
                 </div>
               </div>
             </section>
-            <PlaidConnectButton />
-            <BudgetSettingsForm settings={settings} />
-          </div>
+          </aside>
+        </div>
 
-          <div className="space-y-6">
-            <section className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div id="settings" className="mt-5 grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
+          <div className="space-y-5">
+            <PlaidConnectButton />
+            <section className="rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+              <div className="flex items-center gap-3">
+                <SlidersHorizontal aria-hidden="true" className="h-5 w-5 text-slate-500 dark:text-slate-400" />
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">Latest synced transactions</p>
-                  <h2 className="mt-2 text-2xl font-semibold tracking-tight">Reality, not guesses</h2>
-                  <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">Pulled from connected financial APIs.</p>
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Connector coverage</p>
+                  <h2 className="text-lg font-semibold tracking-tight">{recommendation.primary.name} first</h2>
                 </div>
-                <span className="rounded-full border border-slate-200 px-3 py-1 text-xs font-bold text-slate-600 dark:border-white/10 dark:text-slate-300">{mapped.length} synced</span>
               </div>
-              <div className="mt-5 divide-y divide-slate-100 dark:divide-white/10">
-                {mapped.slice(0, 12).map((transaction) => (
-                  <div key={transaction.id} className="flex items-center justify-between gap-4 py-4">
+              <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">Chase/card transaction sync is the first target. Apple Card and brokerage data stay tracked as coverage gaps until a reliable provider path is confirmed.</p>
+              <div className="mt-4 divide-y divide-slate-100 dark:divide-white/10">
+                {(items ?? []).map((item) => (
+                  <div key={item.id} className="flex items-center justify-between gap-4 py-3 text-sm">
                     <div>
-                      <p className="font-semibold text-slate-950 dark:text-white">{transaction.merchantName}</p>
-                      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{transaction.date} · {transaction.category}</p>
+                      <p className="font-semibold">{item.institution_name ?? item.provider}</p>
+                      <p className="text-slate-500 dark:text-slate-400">{item.provider}</p>
                     </div>
-                    <p className={`number-font font-semibold ${transaction.amount < 0 ? "text-emerald-700 dark:text-emerald-300" : "text-slate-950 dark:text-white"}`}>{currency.format(Math.abs(transaction.amount))}</p>
+                    <span className="rounded-full border border-slate-200 px-3 py-1 text-xs font-bold text-slate-600 dark:border-white/10 dark:text-slate-300">{item.status}</span>
                   </div>
                 ))}
-                {mapped.length === 0 ? <p className="rounded-3xl bg-slate-50 px-4 py-10 text-center text-sm leading-6 text-slate-600 dark:bg-white/[0.04] dark:text-slate-300">No API transactions yet. Once Plaid credentials are configured, connect accounts here and this table becomes the source of truth.</p> : null}
+                {connectedCount === 0 ? <p className="py-3 text-sm leading-6 text-slate-500 dark:text-slate-400">No connected items yet.</p> : null}
               </div>
             </section>
+          </div>
 
-            <section className="grid gap-6 xl:grid-cols-2">
-              <div className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
-                <p className="text-xs font-bold uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">Top categories</p>
-                <div className="mt-4 space-y-3">
-                  {topCategories.map((category) => (
-                    <div key={category.category}>
-                      <div className="flex items-center justify-between gap-4 text-sm"><span className="font-semibold">{category.category}</span><span className="number-font text-slate-500 dark:text-slate-400">{currency.format(category.spend)}</span></div>
-                      <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-white/10"><div className="h-full rounded-full bg-slate-950 dark:bg-white" style={{ width: `${Math.min((category.spend / Math.max(topCategories[0]?.spend ?? 1, 1)) * 100, 100)}%` }} /></div>
-                    </div>
-                  ))}
-                  {topCategories.length === 0 ? <p className="text-sm leading-6 text-slate-500 dark:text-slate-400">Connect accounts to see category pressure.</p> : null}
-                </div>
-              </div>
-
-              <div className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
-                <p className="text-xs font-bold uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">Provider map</p>
-                <h2 className="mt-2 text-xl font-semibold tracking-tight">Use {recommendation.primary.name} first</h2>
-                <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">Best MVP tradeoff for Chase/card transactions. Teller fallback; MX/Finicity/Akoya later if this gets enterprise-grade.</p>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {recommendation.fallbacks.slice(0, 4).map((provider) => (
-                    <span key={provider.id} className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 dark:border-white/10 dark:text-slate-300">{provider.name}</span>
-                  ))}
-                </div>
+          <div className="space-y-5">
+            <section className="rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Top categories</p>
+              <div className="mt-4 space-y-3">
+                {topCategories.map((category) => (
+                  <div key={category.category}>
+                    <div className="flex items-center justify-between gap-4 text-sm"><span className="font-semibold">{category.category}</span><span className="number-font text-slate-500 dark:text-slate-400">{currency.format(category.spend)}</span></div>
+                    <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-white/10"><div className="h-full rounded-full bg-slate-950 dark:bg-white" style={{ width: `${Math.min((category.spend / Math.max(topCategories[0]?.spend ?? 1, 1)) * 100, 100)}%` }} /></div>
+                  </div>
+                ))}
+                {topCategories.length === 0 ? <p className="text-sm leading-6 text-slate-500 dark:text-slate-400">Connect accounts to see category pressure.</p> : null}
               </div>
             </section>
+            <BudgetSettingsForm settings={settings} />
           </div>
         </div>
       </section>
