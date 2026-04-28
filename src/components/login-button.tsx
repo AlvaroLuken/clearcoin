@@ -21,7 +21,7 @@ export function LoginButton() {
       type="button"
       onClick={signIn}
       disabled={loading}
-      className="inline-flex items-center justify-center rounded-full bg-[#9fe870] px-5 py-3 text-sm font-bold text-[#163300] transition hover:scale-[1.02] hover:bg-[#b7f58b] focus:outline-none focus:ring-4 focus:ring-emerald-500/30 active:scale-[0.99] disabled:scale-100 disabled:opacity-60"
+      className="inline-flex items-center justify-center rounded-[4px] bg-[#533afd] px-5 py-3 text-sm font-medium text-white transition hover:bg-[#4434d4] focus:outline-none focus:ring-2 focus:ring-[#533afd] focus:ring-offset-2 active:translate-y-px disabled:translate-y-0 disabled:opacity-60 dark:focus:ring-offset-[#0d253d]"
     >
       {loading ? "Opening Google..." : "Sign in with Google"}
     </button>

@@ -46,30 +46,34 @@ export function PlaidConnectButton() {
   });
 
   return (
-    <section className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">Primary connector</p>
-          <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">Connect financial APIs</h2>
+    <section className="overflow-hidden rounded-[6px] border border-[#e5edf5] bg-white dark:border-white/10 dark:bg-white/[0.04]">
+      <div className="border-b border-[#e5edf5] px-4 py-3 dark:border-white/10">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-[0.14em] text-[#64748d] dark:text-slate-400">Primary connector</p>
+            <h2 className="mt-1 text-lg font-medium tracking-[-0.01em] text-[#061b31] dark:text-white">Connect financial APIs</h2>
+          </div>
+          <span className="inline-flex items-center gap-1.5 rounded-[4px] border border-[#15be53]/40 bg-[#15be53]/15 px-2 py-0.5 text-xs font-medium text-[#108c3d] dark:bg-[#15be53]/12 dark:text-[#7fe4a4]">
+            <ShieldCheck aria-hidden="true" className="h-3.5 w-3.5" /> API-first
+          </span>
         </div>
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-800 dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-200">
-          <ShieldCheck aria-hidden="true" className="h-3.5 w-3.5" /> API-first
-        </span>
       </div>
-      <p className="mt-4 text-sm leading-6 text-slate-600 dark:text-slate-300">{message}</p>
-      {isConfigMissing ? (
-        <p className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-400/20 dark:bg-amber-400/10 dark:text-amber-100">
-          Setup state: Plaid credentials are not on Vercel yet. Users should not see this once provider env vars are added.
-        </p>
-      ) : null}
-      <button
-        type="button"
-        disabled={!ready}
-        onClick={() => open()}
-        className="mt-5 w-full rounded-full bg-[#9fe870] px-5 py-3 text-sm font-bold text-[#163300] transition hover:scale-[1.01] hover:bg-[#b7f58b] focus:outline-none focus:ring-4 focus:ring-emerald-500/30 active:scale-[0.99] disabled:scale-100 disabled:bg-slate-200 disabled:text-slate-500 dark:disabled:bg-white/10 dark:disabled:text-slate-400"
-      >
-        Connect bank/card accounts
-      </button>
+      <div className="px-4 py-4">
+        <p className="text-sm leading-6 text-[#64748d] dark:text-slate-300">{message}</p>
+        {isConfigMissing ? (
+          <p className="mt-3 rounded-[4px] border border-[#f1d9b9] bg-[#fff7ea] p-3 text-sm text-[#9b6829] dark:border-[#9b6829]/40 dark:bg-[#9b6829]/12 dark:text-[#f0c98f]">
+            Setup state: Plaid credentials are not on Vercel yet. Users should not see this once provider env vars are added.
+          </p>
+        ) : null}
+        <button
+          type="button"
+          disabled={!ready}
+          onClick={() => open()}
+          className="mt-4 inline-flex w-full items-center justify-center rounded-[4px] bg-[#533afd] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#4434d4] focus:outline-none focus:ring-2 focus:ring-[#533afd] focus:ring-offset-2 active:translate-y-px disabled:translate-y-0 disabled:bg-[#e5edf5] disabled:text-[#64748d] dark:focus:ring-offset-[#0d253d] dark:disabled:bg-white/10 dark:disabled:text-slate-400 sm:w-auto"
+        >
+          Connect bank/card accounts
+        </button>
+      </div>
     </section>
   );
 }

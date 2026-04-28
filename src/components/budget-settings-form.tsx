@@ -36,29 +36,33 @@ export function BudgetSettingsForm({ settings }: { settings: Settings }) {
   }
 
   return (
-    <section className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
-      <div>
-        <p className="text-xs font-bold uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">Budget model</p>
-        <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">Set the guardrails</h2>
-        <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">{message}</p>
+    <section className="overflow-hidden rounded-[6px] border border-[#e5edf5] bg-white dark:border-white/10 dark:bg-white/[0.04]">
+      <div className="border-b border-[#e5edf5] px-4 py-3 dark:border-white/10">
+        <p className="text-xs font-medium uppercase tracking-[0.14em] text-[#64748d] dark:text-slate-400">Budget model</p>
+        <h2 className="mt-1 text-lg font-medium tracking-[-0.01em] text-[#061b31] dark:text-white">Set the guardrails</h2>
+        <p className="mt-1 text-sm leading-6 text-[#64748d] dark:text-slate-300">{message}</p>
       </div>
-      <div className="mt-5 grid gap-4 sm:grid-cols-2">
+      <div className="divide-y divide-[#e5edf5] dark:divide-white/10">
         {fields.map(([key, label, hint]) => (
-          <label key={key} className="text-sm font-medium text-slate-800 dark:text-slate-200">
-            {label}
-            <span className="mt-1 block text-xs font-normal text-slate-500 dark:text-slate-400">{hint}</span>
+          <label key={key} className="grid gap-3 px-4 py-3 text-sm sm:grid-cols-[180px_1fr] sm:items-center">
+            <span>
+              <span className="block font-medium text-[#273951] dark:text-slate-100">{label}</span>
+              <span className="mt-0.5 block text-xs text-[#64748d] dark:text-slate-400">{hint}</span>
+            </span>
             <input
               inputMode="decimal"
               value={state[key]}
               onChange={(event) => setState((current) => ({ ...current, [key]: event.target.value }))}
-              className="number-font mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/20 dark:border-white/10 dark:bg-slate-950/50 dark:text-white dark:focus:border-emerald-300 dark:focus:ring-emerald-300/20"
+              className="number-font w-full rounded-[4px] border border-[#e5edf5] bg-[#f6f9fc] px-3 py-2 text-base text-[#061b31] outline-none transition placeholder:text-[#64748d] focus:border-[#533afd] focus:ring-2 focus:ring-[#533afd]/20 dark:border-white/10 dark:bg-white/[0.04] dark:text-white"
             />
           </label>
         ))}
       </div>
-      <button onClick={save} type="button" className="mt-5 w-full rounded-full bg-[#9fe870] px-5 py-3 text-sm font-bold text-[#163300] transition hover:scale-[1.01] hover:bg-[#b7f58b] focus:outline-none focus:ring-4 focus:ring-emerald-500/30 active:scale-[0.99]">
-        Save budget model
-      </button>
+      <div className="border-t border-[#e5edf5] px-4 py-3 dark:border-white/10">
+        <button onClick={save} type="button" className="inline-flex w-full items-center justify-center rounded-[4px] bg-[#533afd] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#4434d4] focus:outline-none focus:ring-2 focus:ring-[#533afd] focus:ring-offset-2 active:translate-y-px dark:focus:ring-offset-[#0d253d] sm:w-auto">
+          Save budget model
+        </button>
+      </div>
     </section>
   );
 }

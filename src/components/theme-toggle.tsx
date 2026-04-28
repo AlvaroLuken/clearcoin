@@ -42,7 +42,7 @@ export function ThemeToggle() {
   }
 
   return (
-    <fieldset className="inline-flex rounded-full border border-slate-200 bg-white p-1 shadow-sm dark:border-white/10 dark:bg-slate-900" aria-label="Color theme">
+    <fieldset className="inline-flex rounded-[6px] border border-[#e5edf5] bg-white p-0.5 shadow-[rgba(23,23,23,0.06)_0px_3px_6px] dark:border-white/10 dark:bg-white/[0.04]" aria-label="Color theme">
       <legend className="sr-only">Color theme</legend>
       {modes.map((item) => (
         <button
@@ -50,7 +50,7 @@ export function ThemeToggle() {
           type="button"
           aria-pressed={mode === item.value}
           onClick={() => select(item.value)}
-          className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:text-slate-300 dark:hover:bg-white/10 dark:focus:ring-offset-slate-950 aria-pressed:bg-slate-950 aria-pressed:text-white dark:aria-pressed:bg-white dark:aria-pressed:text-slate-950"
+          className="inline-flex items-center gap-1.5 rounded-[4px] px-2.5 py-1.5 text-xs font-medium text-[#64748d] transition hover:bg-[#f6f9fc] focus:outline-none focus:ring-2 focus:ring-[#533afd] focus:ring-offset-2 dark:text-slate-300 dark:hover:bg-white/10 dark:focus:ring-offset-[#0d253d] aria-pressed:bg-[#061b31] aria-pressed:text-white dark:aria-pressed:bg-white dark:aria-pressed:text-[#061b31]"
         >
           {item.icon}
           {item.label}

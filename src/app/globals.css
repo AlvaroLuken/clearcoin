@@ -3,14 +3,14 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #f7f5ee;
-  --foreground: #10130f;
+  --background: #f6f9fc;
+  --foreground: #061b31;
   color-scheme: light;
 }
 
 .dark {
-  --background: #080b0a;
-  --foreground: #f7f5ee;
+  --background: #0d253d;
+  --foreground: #ffffff;
   color-scheme: dark;
 }
 
@@ -36,7 +36,8 @@ body {
   margin: 0;
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-feature-settings: "ss01";
   text-rendering: optimizeLegibility;
 }
 
@@ -50,8 +51,8 @@ button:disabled {
 }
 
 ::selection {
-  background: #9fe870;
-  color: #163300;
+  background: #d6d9fc;
+  color: #061b31;
 }
 
 .number-font {
